@@ -6,8 +6,9 @@ import { db } from "../firebase/config";
 const BASE_DEMO = {
   temperature: 42.5,
   humidity: 68,
+  gasLevel: 240,
   fallDetected: false,
-  gps: { lat: 16.5062, lng: 80.648 },
+  gps: { lat: 16.508981286911585, lng: 80.65806564630255 },
   status: "safe",
   lastUpdated: Math.floor(Date.now() / 1000),
 };
@@ -19,21 +20,19 @@ function buildDemoSnapshot(tick) {
   const temp = parseFloat((tempBase + (Math.random() - 0.5) * 0.8).toFixed(1));
 
   const humidity = parseFloat((68 + Math.sin(tick * 0.12) * 6 + (Math.random() - 0.5) * 2).toFixed(1));
-
-  // GPS drifts very slightly to simulate movement
-  const lat = parseFloat((BASE_DEMO.gps.lat + Math.sin(tick * 0.05) * 0.0003).toFixed(6));
-  const lng = parseFloat((BASE_DEMO.gps.lng + Math.cos(tick * 0.05) * 0.0003).toFixed(6));
+  const gasLevel = Math.max(80, Math.round(220 + Math.sin(tick * 0.2) * 70 + (Math.random() - 0.5) * 35));
 
   // Status escalates when temp is high
   let status = "safe";
-  if (temp >= 55) status = "critical";
-  else if (temp >= 47) status = "warning";
+  if (temp >= 55 || gasLevel >= 450) status = "critical";
+  else if (temp >= 47 || gasLevel >= 320) status = "warning";
 
   return {
     temperature: temp,
     humidity,
+    gasLevel,
     fallDetected: false,
-    gps: { lat, lng },
+    gps: BASE_DEMO.gps,
     status,
     lastUpdated: Math.floor(Date.now() / 1000),
   };
@@ -122,8 +121,9 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
           const parsed = {
             temperature: raw.temperature ?? 0,
             humidity: raw.humidity ?? 0,
+            gasLevel: raw.gas_ppm ?? raw.gas_level ?? raw.gasLevel ?? 0,
             fallDetected: raw.fall_detected ?? false,
-            gps: raw.gps ?? { lat: 16.5062, lng: 80.648 },
+            gps: raw.gps ?? { lat: 16.508981286911585, lng: 80.65806564630255 },
             status: raw.status ?? "unknown",
             lastUpdated: raw.last_updated ?? Math.floor(Date.now() / 1000),
           };

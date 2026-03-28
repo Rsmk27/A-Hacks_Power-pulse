@@ -151,18 +151,18 @@ export default function App() {
         {!loading && data && (
           <>
             {/* ── ROW 1: Status Cards ── */}
-            <section className="grid grid-cols-4 gap-4">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {/* Temperature card */}
               <TempHumidityCard temperature={data.temperature} humidity={data.humidity} />
 
-              {/* Humidity standalone */}
+              {/* MQ-2 Gas level */}
               <StatusCard
-                icon="💧"
-                label="Humidity"
-                value={data.humidity}
-                unit="%"
-                color={data.humidity > 80 ? "orange" : "blue"}
-                sublabel={data.humidity > 80 ? "High moisture — check gear" : "Normal range"}
+                icon="🧪"
+                label="MQ-2 Gas"
+                value={data.gasLevel}
+                unit="ppm"
+                color={data.gasLevel >= 450 ? "red" : data.gasLevel >= 320 ? "orange" : "green"}
+                sublabel={data.gasLevel >= 450 ? "Critical gas concentration" : data.gasLevel >= 320 ? "Elevated gas levels" : "Air quality stable"}
               />
 
               {/* Status */}
