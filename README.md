@@ -83,12 +83,12 @@ Follow these instructions to run Power Pulse on your local machine.
 **Team Name:** Fire Fighter Safety Device
 
 ### Hardware
-*   **Sairam** - [GitHub](https://github.com/) | [LinkedIn](https://www.linkedin.com/in/sairam-galam/)
-*   **Santhosh** - [GitHub](https://github.com/) | [LinkedIn](https://www.linkedin.com/in/santhosh-juvvanapudi-07a871373/)
+*   **Sairam** - [GitHub](https://github.com/sairamgalam017) | [LinkedIn](https://www.linkedin.com/in/sairam-galam/)
+*   **Santhosh** - [GitHub](https://github.com/chintu-boltey) | [LinkedIn](https://www.linkedin.com/in/santhosh-juvvanapudi-07a871373/)
 
 ### Software
 *   **R.S.Manikanta** - [GitHub](https://github.com/Rsmk27) | [LinkedIn](https://www.linkedin.com/in/srinivasamanikanta/)
-*   **Ramu** - [GitHub](https://github.com/) | [LinkedIn](https://www.linkedin.com/in/ramunarlapati/)
+*   **Ramu** - [GitHub](https://github.com/ramunarlapati-13) | [LinkedIn](https://www.linkedin.com/in/ramunarlapati/)
 
 ---
 *Created for the A-Hacks 2026 Hackathon.*
