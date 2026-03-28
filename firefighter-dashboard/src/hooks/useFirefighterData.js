@@ -11,6 +11,11 @@ const BASE_DEMO = {
   gps: { lat: 16.508981286911585, lng: 80.65806564630255 },
   gpsFallback: true,
   status: "safe",
+  heartRate: 85,
+  spo2: 98,
+  battery: 88,
+  signal: 4,
+  connectionStatus: "Connected",
   lastUpdated: Math.floor(Date.now() / 1000),
 };
 
@@ -28,13 +33,16 @@ function buildDemoSnapshot(tick) {
   if (temp >= 55 || gasLevel >= 450) status = "critical";
   else if (temp >= 47 || gasLevel >= 320) status = "warning";
 
+  const heartRate = Math.round(85 + Math.sin(tick * 0.3) * 15 + (Math.random() - 0.5) * 5);
+  const spo2 = Math.round(98 - Math.max(0, (temp - 45) / 5) * 2 - (gasLevel > 300 ? 5 : 0) + (Math.random() - 0.5));
+
   return {
+    ...BASE_DEMO,
     temperature: temp,
     humidity,
     gasLevel,
-    fallDetected: false,
-    gps: BASE_DEMO.gps,
-    gpsFallback: true,
+    heartRate,
+    spo2,
     status,
     lastUpdated: Math.floor(Date.now() / 1000),
   };
@@ -130,6 +138,11 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
             gps: hasValidGps ? rawGps : { lat: 16.508981286911585, lng: 80.65806564630255 },
             gpsFallback: !hasValidGps,
             status: raw.status ?? "unknown",
+            heartRate: raw.heartRate ?? Math.round(85 + Math.random() * 5),
+            spo2: raw.spo2 ?? 98,
+            battery: raw.battery ?? 88,
+            signal: raw.signal ?? 4,
+            connectionStatus: "Connected",
             lastUpdated: raw.last_updated ?? Math.floor(Date.now() / 1000),
           };
           setData(parsed);
@@ -187,7 +200,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
       stopDemo();
       stopLive();
     };
-  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode, firefighterId]); // Re-run when mode or dataset ID changes
 
   const toggleMode = useCallback(() => {
     setMode((prev) => (prev === "live" ? "demo" : "live"));

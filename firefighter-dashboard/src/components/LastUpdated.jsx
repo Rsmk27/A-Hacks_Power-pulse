@@ -20,14 +20,14 @@ export default function LastUpdated({ lastUpdated }) {
   const isStale = secondsAgo !== null && secondsAgo > 30;
 
   return (
-    <div className={`flex items-center gap-2 text-xs ${isStale ? "text-red-600" : "text-gray-600"}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${isStale ? "bg-red-500 animate-pulse" : "bg-gray-400"}`} />
+    <div className={`flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase font-bold ${isStale ? "text-red-600" : "text-slate-600"}`}>
+      <span className={`w-1.5 h-1.5 rounded-sm ${isStale ? "bg-red-500 animate-pulse" : "bg-slate-400"}`} />
       {secondsAgo === null ? (
-        <span>No data received</span>
+        <span>NO SIGNAL</span>
       ) : isStale ? (
-        <span className="font-medium">⚠ Device may be offline — Last seen {secondsAgo}s ago</span>
+        <span className="font-bold">⚠ SIGNAL LOST [T-MINUS {secondsAgo}S]</span>
       ) : (
-        <span>Last updated: {secondsAgo}s ago</span>
+        <span>SYNC: T-MINUS {secondsAgo}S</span>
       )}
     </div>
   );

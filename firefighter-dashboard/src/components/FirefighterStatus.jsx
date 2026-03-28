@@ -1,8 +1,8 @@
 const statusConfig = {
-  safe: {
-    label: "SAFE",
+  normal: {
+    label: "NORMAL",
     emoji: "✅",
-    color: "text-emerald-400",
+    color: "text-emerald-600",
     border: "border-emerald-500/30",
     bg: "bg-emerald-500/10",
     dot: "bg-emerald-500",
@@ -11,66 +11,78 @@ const statusConfig = {
   warning: {
     label: "WARNING",
     emoji: "⚠️",
-    color: "text-orange-400",
+    color: "text-orange-600",
     border: "border-orange-500/30",
     bg: "bg-orange-500/10",
     dot: "bg-orange-500",
-    pulsing: false,
+    pulsing: true,
   },
   critical: {
     label: "CRITICAL",
     emoji: "🚨",
-    color: "text-red-400",
+    color: "text-red-600",
     border: "border-red-500/50",
-    bg: "bg-red-500/20",
+    bg: "bg-red-500/10",
     dot: "bg-red-500 animate-ping",
     pulsing: true,
   },
-  unknown: {
-    label: "UNKNOWN",
-    emoji: "❓",
-    color: "text-gray-600",
-    border: "border-gray-300",
-    bg: "bg-gray-100",
-    dot: "bg-gray-400",
+  sos: {
+    label: "S.O.S",
+    emoji: "🆘",
+    color: "text-fuchsia-600",
+    border: "border-fuchsia-500/80",
+    bg: "bg-fuchsia-500/10",
+    dot: "bg-fuchsia-500 animate-ping",
+    pulsing: true,
+  },
+  offline: {
+    label: "OFFLINE",
+    emoji: "🔌",
+    color: "text-slate-500",
+    border: "border-slate-300",
+    bg: "bg-slate-200",
+    dot: "bg-slate-400",
     pulsing: false,
   },
 };
 
 export default function FirefighterStatus({ status }) {
-  const cfg = statusConfig[status] ?? statusConfig.unknown;
+  // Normalize status string just in case
+  const normStatus = (status || "").toLowerCase().trim();
+  const cfg = statusConfig[normStatus] || statusConfig[normStatus === "safe" ? "normal" : "offline"];
 
   return (
     <div
-      className={`relative rounded-2xl border ${cfg.border} bg-white p-5 shadow-md overflow-hidden hover:scale-[1.02] transition-transform duration-200 ${
-        cfg.pulsing ? "animate-pulse" : ""
-      }`}
+      className={`relative rounded-xl border ${cfg.border} bg-white/95 p-3 shadow-md backdrop-blur-md overflow-hidden hover:border-slate-400 transition-all duration-200 h-full flex flex-col`}
     >
-      {cfg.pulsing && <div className="absolute inset-0 bg-red-500/5 animate-pulse" />}
-
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-2xl">{cfg.emoji}</span>
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex items-center justify-between mb-2 border-b border-slate-100 pb-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">{cfg.emoji}</span>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Unit Status</p>
+          </div>
           <div className="flex items-center gap-1.5">
-            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
+            <span className={`w-1.5 h-1.5 rounded-sm ${cfg.dot} shadow-sm`} />
           </div>
         </div>
 
-        <p className="text-xs text-gray-600 uppercase tracking-widest font-medium mb-1">Unit Status</p>
-
-        <div className="mt-2">
-          <span
-            className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold ${cfg.color} ${cfg.bg} border ${cfg.border}`}
-          >
-            {cfg.label}
-          </span>
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="flex items-center">
+            <span
+              className={`inline-block px-3 py-1 rounded-sm text-3xl font-black font-mono tracking-[0.1em] ${cfg.color} ${cfg.bg} border ${cfg.border}`}
+            >
+              {cfg.label}
+            </span>
+          </div>
         </div>
 
-        <p className="text-xs text-gray-600 mt-3">
-          {status === "safe" && "Firefighter is operating normally"}
-          {status === "warning" && "Attention required — monitor closely"}
-          {status === "critical" && "Emergency! Immediate action required!"}
-          {status === "unknown" && "Waiting for device signal..."}
+        <p className="text-[9px] text-slate-400 mt-2 font-mono font-bold uppercase tracking-widest bg-slate-50 p-1 rounded border border-slate-100 truncate">
+          {normStatus === "normal" && "SYS_NOMINAL: Operating at baseline limits"}
+          {normStatus === "safe" && "SYS_NOMINAL: Operating at baseline limits"}
+          {normStatus === "warning" && "WARN_LEVEL_1: Physiological threshold approaching"}
+          {normStatus === "critical" && "CRITICAL_ALERT: Immediate evacuation recommended"}
+          {normStatus === "sos" && "DISTRESS_SIGNAL: IMMEDIATE MAYDAY DEPLOYMENT"}
+          {(normStatus === "offline" || normStatus === "unknown" || !normStatus) && "AWAITING_UPLINK: Telemetry stream disconnected"}
         </p>
       </div>
     </div>
