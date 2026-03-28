@@ -1,36 +1,14 @@
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
-function playAlertSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    oscillator.type = "square";
-    oscillator.frequency.setValueAtTime(880, ctx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
-
-    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.5);
-  } catch (e) {
-    console.warn("Audio not supported:", e);
-  }
-}
+const EMERGENCY_SOUND_URL = "https://www.myinstants.com/media/sounds/wrong-lie-incorrect-buzzer.mp3";
 
 export default function FallAlert({ fallDetected }) {
   const prevFall = useRef(false);
-  const alarmLoopRef = useRef(null);
+  const alarmAudioRef = useRef(null);
 
   useEffect(() => {
     if (fallDetected && !prevFall.current) {
-      playAlertSound();
       toast.error("⚠️ FALL DETECTED! Immediate assistance required!", {
         duration: 6000,
         style: {
@@ -46,22 +24,35 @@ export default function FallAlert({ fallDetected }) {
   }, [fallDetected]);
 
   useEffect(() => {
-    if (fallDetected && !alarmLoopRef.current) {
-      // Keep sounding the emergency alarm while alert is active.
-      alarmLoopRef.current = setInterval(() => {
-        playAlertSound();
-      }, 700);
+    if (fallDetected) {
+      // Prefer the requested custom emergency sound and keep it looping.
+      if (!alarmAudioRef.current) {
+        const audio = new Audio(EMERGENCY_SOUND_URL);
+        audio.loop = true;
+        audio.preload = "auto";
+        audio.volume = 0.9;
+        alarmAudioRef.current = audio;
+      }
+
+      alarmAudioRef.current
+        .play()
+        .then(() => {})
+        .catch(() => {
+          // Browser may block autoplay until user interacts with the page.
+        });
     }
 
-    if (!fallDetected && alarmLoopRef.current) {
-      clearInterval(alarmLoopRef.current);
-      alarmLoopRef.current = null;
+    if (!fallDetected) {
+      if (alarmAudioRef.current) {
+        alarmAudioRef.current.pause();
+        alarmAudioRef.current.currentTime = 0;
+      }
     }
 
     return () => {
-      if (alarmLoopRef.current) {
-        clearInterval(alarmLoopRef.current);
-        alarmLoopRef.current = null;
+      if (alarmAudioRef.current) {
+        alarmAudioRef.current.pause();
+        alarmAudioRef.current.currentTime = 0;
       }
     };
   }, [fallDetected]);
