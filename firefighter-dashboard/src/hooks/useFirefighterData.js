@@ -132,8 +132,6 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
             gps: hasValidGps ? rawGps : { lat: 16.508981286911585, lng: 80.65806564630255 },
             gpsFallback: !hasValidGps,
             status: raw.status ?? "unknown",
-            state: raw.state ?? null,
-            deviceState: raw.device_state ?? null,
             lastUpdated: raw.last_updated ?? Math.floor(Date.now() / 1000),
           };
           const nowUnix = Math.floor(Date.now() / 1000);
@@ -175,21 +173,13 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
     const interval = setInterval(async () => {
       const nowUnix = Math.floor(Date.now() / 1000);
       const staleSeconds = nowUnix - (data.lastUpdated ?? nowUnix);
-      const alreadyOffline =
-        data.status === "offline" &&
-        data.state === "offline" &&
-        data.deviceState === "offline" &&
-        data.temperature == null &&
-        data.humidity == null &&
-        data.gasLevel == null &&
-        data.fallDetected == null;
+      const alreadyOffline = data.status === "offline";
 
       if (staleSeconds > OFFLINE_AFTER_SECONDS && !offlineMarkedRef.current && !alreadyOffline) {
         try {
           await update(ref(db, firefighterId), {
             status: "offline",
             state: "offline",
-            device_state: "offline",
             temperature: null,
             humidity: null,
             gas_ppm: null,
