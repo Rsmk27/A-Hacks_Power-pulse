@@ -76,6 +76,12 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
   const firebaseUnsubRef = useRef(null);
   const timeoutRef = useRef(null);
   const offlineMarkedRef = useRef(false);
+  const lastKnownRef = useRef({
+    temperature: null,
+    humidity: null,
+    gasLevel: null,
+    fallDetected: false,
+  });
 
   // ── Demo runner ───────────────────────────────────────────────────────────
   const startDemo = useCallback(() => {
@@ -125,10 +131,10 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
           const rawGps = raw.gps;
           const hasValidGps = rawGps?.lat != null && rawGps?.lng != null;
           const parsed = {
-            temperature: raw.temperature ?? 0,
-            humidity: raw.humidity ?? 0,
-            gasLevel: raw.gas_ppm ?? raw.gas_level ?? raw.gasLevel ?? 240,
-            fallDetected: raw.fall_detected ?? false,
+            temperature: raw.temperature ?? null,
+            humidity: raw.humidity ?? null,
+            gasLevel: raw.gas_ppm ?? raw.gas_level ?? raw.gasLevel ?? null,
+            fallDetected: raw.fall_detected ?? null,
             gps: hasValidGps ? rawGps : { lat: 16.508981286911585, lng: 80.65806564630255 },
             gpsFallback: !hasValidGps,
             status: raw.status ?? "unknown",
@@ -136,22 +142,37 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
             deviceState: raw.device_state ?? null,
             lastUpdated: raw.last_updated ?? Math.floor(Date.now() / 1000),
           };
+
+          if (parsed.status === "offline") {
+            parsed.temperature = parsed.temperature ?? lastKnownRef.current.temperature;
+            parsed.humidity = parsed.humidity ?? lastKnownRef.current.humidity;
+            parsed.gasLevel = parsed.gasLevel ?? lastKnownRef.current.gasLevel;
+            parsed.fallDetected = parsed.fallDetected ?? lastKnownRef.current.fallDetected;
+          }
+
+          if (parsed.temperature != null) lastKnownRef.current.temperature = parsed.temperature;
+          if (parsed.humidity != null) lastKnownRef.current.humidity = parsed.humidity;
+          if (parsed.gasLevel != null) lastKnownRef.current.gasLevel = parsed.gasLevel;
+          if (parsed.fallDetected != null) lastKnownRef.current.fallDetected = parsed.fallDetected;
+
           const nowUnix = Math.floor(Date.now() / 1000);
           const staleSeconds = nowUnix - parsed.lastUpdated;
           if (staleSeconds <= OFFLINE_AFTER_SECONDS) {
             offlineMarkedRef.current = false;
           }
           setData(parsed);
-          setTempHistory((prev) => {
-            const next = [
-              ...prev,
-              {
-                time: new Date(parsed.lastUpdated * 1000).toLocaleTimeString(),
-                temp: parsed.temperature,
-              },
-            ];
-            return next.slice(-20);
-          });
+          if (parsed.temperature != null) {
+            setTempHistory((prev) => {
+              const next = [
+                ...prev,
+                {
+                  time: new Date(parsed.lastUpdated * 1000).toLocaleTimeString(),
+                  temp: parsed.temperature,
+                },
+              ];
+              return next.slice(-20);
+            });
+          }
         } else {
           // Connected but node missing — show demo data as fallback
           const snap = buildDemoSnapshot(tickRef.current++);
@@ -190,12 +211,6 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
             status: "offline",
             state: "offline",
             device_state: "offline",
-            temperature: null,
-            humidity: null,
-            gas_ppm: null,
-            gas_level: null,
-            gasLevel: null,
-            fall_detected: null,
           });
           offlineMarkedRef.current = true;
         } catch (err) {

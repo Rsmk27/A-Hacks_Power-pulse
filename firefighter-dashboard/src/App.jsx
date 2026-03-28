@@ -78,6 +78,11 @@ export default function App() {
 
   const isDemo = mode === "demo";
   const isDeviceOffline = data?.status === "offline";
+  const telemetryUnavailable =
+    isDeviceOffline &&
+    data?.temperature == null &&
+    data?.humidity == null &&
+    data?.gasLevel == null;
 
   return (
     <div className="w-screen h-screen bg-[#f5f7fb] text-gray-900 flex flex-col overflow-hidden" style={{ fontFamily: "'Space Grotesk', sans-serif", maxWidth: "100vw" }}>
@@ -88,7 +93,7 @@ export default function App() {
         <div className="flex items-center gap-3">
           <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-sm sm:text-lg flex-shrink-0">🔥</div>
           <div>
-            <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight truncate">Firefighter Safety</h1>
+            <h1 className="text-xs sm:text-sm font-bold text-gray-900 leading-tight truncate">FireFighter Safety Device</h1>
             <p className="text-xs text-gray-500 hidden sm:block">Dashboard</p>
           </div>
         </div>
@@ -155,26 +160,36 @@ export default function App() {
             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-2 w-full">
               {/* Temperature card */}
               <TempHumidityCard
-                temperature={isDeviceOffline ? null : data.temperature}
-                humidity={isDeviceOffline ? null : data.humidity}
-                isOffline={isDeviceOffline}
+                temperature={data.temperature}
+                humidity={data.humidity}
+                isOffline={telemetryUnavailable}
               />
 
               {/* MQ-2 Gas level */}
               <StatusCard
                 icon="🧪"
                 label="MQ-2 Gas"
-                value={isDeviceOffline ? null : data.gasLevel}
+                value={data.gasLevel}
                 unit="ppm"
-                color={isDeviceOffline ? "blue" : data.gasLevel >= 450 ? "red" : data.gasLevel >= 320 ? "orange" : "green"}
-                sublabel={isDeviceOffline ? "Sensor offline" : data.gasLevel >= 450 ? "Critical gas concentration" : data.gasLevel >= 320 ? "Elevated gas levels" : "Air quality stable"}
+                color={telemetryUnavailable ? "blue" : data.gasLevel >= 450 ? "red" : data.gasLevel >= 320 ? "orange" : "green"}
+                sublabel={
+                  telemetryUnavailable
+                    ? "Sensor offline"
+                    : isDeviceOffline
+                      ? "Showing last known reading"
+                      : data.gasLevel >= 450
+                        ? "Critical gas concentration"
+                        : data.gasLevel >= 320
+                          ? "Elevated gas levels"
+                          : "Air quality stable"
+                }
               />
 
               {/* Status */}
               <FirefighterStatus status={data.status} />
 
               {/* Fall detection */}
-              <FallAlert fallDetected={data.fallDetected} />
+              <FallAlert fallDetected={Boolean(data.fallDetected)} />
             </section>
 
             {/* ── ROW 2: GPS Map + Temperature Chart (Side by Side) ── */}
@@ -208,8 +223,8 @@ export default function App() {
                 </div>
                 <div className="flex-1 min-h-0 w-full">
                   <TempHistoryChart
-                    data={isDeviceOffline ? [] : tempHistory}
-                    emptyMessage={isDeviceOffline ? "N/A (Device offline)" : "Waiting for temperature data..."}
+                    data={tempHistory}
+                    emptyMessage={telemetryUnavailable ? "N/A (Device offline)" : "Waiting for temperature data..."}
                   />
                 </div>
               </div>
