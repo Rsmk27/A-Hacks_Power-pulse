@@ -36,7 +36,7 @@ export default function FallAlert({ fallDetected }) {
 
       alarmAudioRef.current
         .play()
-        .then(() => {})
+        .then(() => { })
         .catch(() => {
           // Browser may block autoplay until user interacts with the page.
         });
@@ -59,35 +59,41 @@ export default function FallAlert({ fallDetected }) {
 
   if (!fallDetected) {
     return (
-      <div className="relative rounded-2xl border border-emerald-500/30 bg-white p-5 shadow-md overflow-hidden hover:scale-[1.02] transition-transform duration-200">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-2xl">🛡️</span>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="relative rounded-xl border border-emerald-500/30 bg-white/95 p-3 shadow-md backdrop-blur-md overflow-hidden hover:border-slate-400 transition-all duration-200 h-full flex flex-col">
+        <div className="flex items-center justify-between mb-2 border-b border-slate-100 pb-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🛡️</span>
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Motion/Fall Array</p>
+          </div>
+          <span className="w-1.5 h-1.5 rounded-sm bg-emerald-500 animate-pulse shadow-sm" />
         </div>
-        <p className="text-xs text-gray-600 uppercase tracking-widest font-medium mb-1">Fall Detection</p>
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-4xl font-bold text-emerald-400 leading-none">STABLE</span>
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="flex items-center gap-2">
+            <span className="text-3xl font-bold font-mono text-emerald-600 leading-none">STABLE</span>
+          </div>
         </div>
-        <p className="text-xs text-gray-600 mt-2">No fall events detected</p>
+        <p className="text-[9px] text-slate-400 mt-2 font-mono font-bold uppercase tracking-widest bg-slate-50 p-1 rounded border border-slate-100">GYRO_STABLE: Baseline Nominal</p>
       </div>
     );
   }
 
   return (
-    <div className="relative rounded-2xl border-2 border-red-500 bg-red-50 p-5 shadow-xl shadow-red-200 overflow-hidden animate-pulse-border">
+    <div className="relative rounded-xl border border-red-500 bg-red-50/95 p-3 shadow-md backdrop-blur-md overflow-hidden animate-pulse-border h-full flex flex-col">
       {/* Pulsing glow overlay */}
-      <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
+      <div className="absolute inset-0 bg-red-500/10 animate-pulse pointer-events-none" />
 
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-2xl animate-bounce">⚠️</span>
-          <span className="text-xs font-bold text-red-700 bg-red-200 px-2 py-0.5 rounded-full animate-pulse">ALERT</span>
+      <div className="relative z-10 flex flex-col h-full">
+        <div className="flex items-center justify-between mb-2 border-b border-red-500/30 pb-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl animate-bounce">⚠️</span>
+            <p className="text-[10px] text-red-600 uppercase tracking-widest font-bold">Fall Alert</p>
+          </div>
+          <span className="text-[9px] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded-sm animate-pulse tracking-widest shadow-sm">IMPACT</span>
         </div>
-        <p className="text-xs text-red-700/70 uppercase tracking-widest font-medium mb-1">Fall Detection</p>
-        <div className="mt-2">
-          <p className="text-2xl font-bold text-red-700 leading-none">⚠ FALL DETECTED</p>
-          <p className="text-xs text-red-700/80 mt-2 animate-pulse">Immediate assistance needed!</p>
+        <div className="flex-1 flex flex-col justify-center">
+          <p className="text-2xl font-bold font-mono text-red-600 leading-none">⚠ FALL DETECTED</p>
         </div>
+        <p className="text-[9px] text-red-600 mt-2 font-mono font-bold uppercase tracking-widest bg-red-100 p-1 rounded animate-pulse">IMMEDIATE ASSISTANCE REQ!</p>
       </div>
     </div>
   );
