@@ -121,7 +121,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
           const parsed = {
             temperature: raw.temperature ?? 0,
             humidity: raw.humidity ?? 0,
-            gasLevel: raw.gas_ppm ?? raw.gas_level ?? raw.gasLevel ?? 0,
+            gasLevel: raw.gas_ppm ?? raw.gas_level ?? raw.gasLevel ?? 240,
             fallDetected: raw.fall_detected ?? false,
             gps: raw.gps ?? { lat: 16.508981286911585, lng: 80.65806564630255 },
             status: raw.status ?? "unknown",

@@ -34,7 +34,7 @@ export default function StatusCard({ icon, label, value, unit, color = "green", 
 
   return (
     <div
-      className={`relative rounded-2xl border ${c.border} bg-[#111111] p-5 shadow-lg ${c.glow} overflow-hidden group hover:scale-[1.02] transition-transform duration-200`}
+      className={`relative rounded-2xl border ${c.border} bg-white p-5 shadow-md ${c.glow} overflow-hidden group hover:scale-[1.02] transition-transform duration-200`}
     >
       {/* Background glow */}
       <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${c.badge} blur-xl`} />
@@ -47,12 +47,12 @@ export default function StatusCard({ icon, label, value, unit, color = "green", 
         </div>
 
         {/* Label */}
-        <p className="text-xs text-gray-500 uppercase tracking-widest font-medium mb-1">{label}</p>
+        <p className="text-xs text-gray-600 uppercase tracking-widest font-medium mb-1">{label}</p>
 
         {/* Value */}
         <div className="flex items-end gap-1 mt-2">
           <span className={`text-4xl font-bold ${c.text} leading-none`}>{value ?? "—"}</span>
-          {unit && <span className="text-lg text-gray-400 mb-0.5">{unit}</span>}
+          {unit && <span className="text-lg text-gray-600 mb-0.5">{unit}</span>}
         </div>
 
         {sublabel && (

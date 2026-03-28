@@ -29,10 +29,10 @@ const statusConfig = {
   unknown: {
     label: "UNKNOWN",
     emoji: "❓",
-    color: "text-gray-400",
-    border: "border-gray-700",
-    bg: "bg-gray-800/50",
-    dot: "bg-gray-500",
+    color: "text-gray-600",
+    border: "border-gray-300",
+    bg: "bg-gray-100",
+    dot: "bg-gray-400",
     pulsing: false,
   },
 };
@@ -42,7 +42,7 @@ export default function FirefighterStatus({ status }) {
 
   return (
     <div
-      className={`relative rounded-2xl border ${cfg.border} bg-[#111111] p-5 shadow-lg overflow-hidden hover:scale-[1.02] transition-transform duration-200 ${
+      className={`relative rounded-2xl border ${cfg.border} bg-white p-5 shadow-md overflow-hidden hover:scale-[1.02] transition-transform duration-200 ${
         cfg.pulsing ? "animate-pulse" : ""
       }`}
     >
@@ -56,7 +56,7 @@ export default function FirefighterStatus({ status }) {
           </div>
         </div>
 
-        <p className="text-xs text-gray-500 uppercase tracking-widest font-medium mb-1">Unit Status</p>
+        <p className="text-xs text-gray-600 uppercase tracking-widest font-medium mb-1">Unit Status</p>
 
         <div className="mt-2">
           <span

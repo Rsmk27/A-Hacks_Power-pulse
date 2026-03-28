@@ -33,9 +33,9 @@ export default function FallAlert({ fallDetected }) {
       toast.error("⚠️ FALL DETECTED! Immediate assistance required!", {
         duration: 6000,
         style: {
-          background: "#1a0000",
-          color: "#ff4444",
-          border: "1px solid #ff444460",
+          background: "#fff5f5",
+          color: "#b91c1c",
+          border: "1px solid #fecaca",
           fontFamily: "Space Grotesk, sans-serif",
           fontWeight: "600",
         },
@@ -46,12 +46,12 @@ export default function FallAlert({ fallDetected }) {
 
   if (!fallDetected) {
     return (
-      <div className="relative rounded-2xl border border-emerald-500/30 bg-[#111111] p-5 shadow-lg overflow-hidden hover:scale-[1.02] transition-transform duration-200">
+      <div className="relative rounded-2xl border border-emerald-500/30 bg-white p-5 shadow-md overflow-hidden hover:scale-[1.02] transition-transform duration-200">
         <div className="flex items-center justify-between mb-3">
           <span className="text-2xl">🛡️</span>
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         </div>
-        <p className="text-xs text-gray-500 uppercase tracking-widest font-medium mb-1">Fall Detection</p>
+        <p className="text-xs text-gray-600 uppercase tracking-widest font-medium mb-1">Fall Detection</p>
         <div className="flex items-center gap-2 mt-2">
           <span className="text-4xl font-bold text-emerald-400 leading-none">STABLE</span>
         </div>
@@ -61,19 +61,19 @@ export default function FallAlert({ fallDetected }) {
   }
 
   return (
-    <div className="relative rounded-2xl border-2 border-red-500 bg-red-950/40 p-5 shadow-2xl shadow-red-500/30 overflow-hidden animate-pulse-border">
+    <div className="relative rounded-2xl border-2 border-red-500 bg-red-50 p-5 shadow-xl shadow-red-200 overflow-hidden animate-pulse-border">
       {/* Pulsing glow overlay */}
       <div className="absolute inset-0 bg-red-500/10 animate-pulse" />
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-3">
           <span className="text-2xl animate-bounce">⚠️</span>
-          <span className="text-xs font-bold text-red-400 bg-red-500/20 px-2 py-0.5 rounded-full animate-pulse">ALERT</span>
+          <span className="text-xs font-bold text-red-700 bg-red-200 px-2 py-0.5 rounded-full animate-pulse">ALERT</span>
         </div>
-        <p className="text-xs text-red-400/70 uppercase tracking-widest font-medium mb-1">Fall Detection</p>
+        <p className="text-xs text-red-700/70 uppercase tracking-widest font-medium mb-1">Fall Detection</p>
         <div className="mt-2">
-          <p className="text-2xl font-bold text-red-400 leading-none">⚠ FALL DETECTED</p>
-          <p className="text-xs text-red-400/80 mt-2 animate-pulse">Immediate assistance needed!</p>
+          <p className="text-2xl font-bold text-red-700 leading-none">⚠ FALL DETECTED</p>
+          <p className="text-xs text-red-700/80 mt-2 animate-pulse">Immediate assistance needed!</p>
         </div>
       </div>
     </div>

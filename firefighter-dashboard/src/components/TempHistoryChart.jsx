@@ -14,8 +14,8 @@ const CustomTooltip = ({ active, payload, label }) => {
     const temp = payload[0].value;
     const color = temp >= 60 ? "#ef4444" : temp >= 45 ? "#f97316" : "#10b981";
     return (
-      <div className="bg-[#1a1a1a] border border-gray-700 rounded-lg p-3 shadow-xl">
-        <p className="text-xs text-gray-400 mb-1">{label}</p>
+      <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-xl">
+        <p className="text-xs text-gray-600 mb-1">{label}</p>
         <p className="text-lg font-bold" style={{ color }}>
           {temp.toFixed(1)}°C
         </p>
@@ -28,7 +28,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function TempHistoryChart({ data }) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-600">
+      <div className="flex items-center justify-center h-full text-gray-500">
         <p>Waiting for temperature data...</p>
       </div>
     );
@@ -37,18 +37,18 @@ export default function TempHistoryChart({ data }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#1f1f1f" />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="time"
-          tick={{ fill: "#4b5563", fontSize: 10, fontFamily: "Space Grotesk" }}
-          axisLine={{ stroke: "#1f1f1f" }}
+          tick={{ fill: "#6b7280", fontSize: 10, fontFamily: "Space Grotesk" }}
+          axisLine={{ stroke: "#d1d5db" }}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
           domain={["auto", "auto"]}
-          tick={{ fill: "#4b5563", fontSize: 10, fontFamily: "Space Grotesk" }}
-          axisLine={{ stroke: "#1f1f1f" }}
+          tick={{ fill: "#6b7280", fontSize: 10, fontFamily: "Space Grotesk" }}
+          axisLine={{ stroke: "#d1d5db" }}
           tickLine={false}
           tickFormatter={(v) => `${v}°`}
         />

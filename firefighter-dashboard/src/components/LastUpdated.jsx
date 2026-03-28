@@ -20,8 +20,8 @@ export default function LastUpdated({ lastUpdated }) {
   const isStale = secondsAgo !== null && secondsAgo > 30;
 
   return (
-    <div className={`flex items-center gap-2 text-xs ${isStale ? "text-red-400" : "text-gray-500"}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${isStale ? "bg-red-400 animate-pulse" : "bg-gray-600"}`} />
+    <div className={`flex items-center gap-2 text-xs ${isStale ? "text-red-600" : "text-gray-600"}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${isStale ? "bg-red-500 animate-pulse" : "bg-gray-400"}`} />
       {secondsAgo === null ? (
         <span>No data received</span>
       ) : isStale ? (
