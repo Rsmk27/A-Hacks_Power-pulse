@@ -77,6 +77,7 @@ export default function App() {
     useFirefighterData("firefighter_01", "live");
 
   const isDemo = mode === "demo";
+  const isDeviceOffline = data?.status === "offline";
 
   return (
     <div className="w-screen h-screen bg-[#f5f7fb] text-gray-900 flex flex-col overflow-hidden" style={{ fontFamily: "'Space Grotesk', sans-serif", maxWidth: "100vw" }}>
@@ -153,16 +154,20 @@ export default function App() {
             {/* ── ROW 1: Status Cards ── */}
             <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1 sm:gap-2 w-full">
               {/* Temperature card */}
-              <TempHumidityCard temperature={data.temperature} humidity={data.humidity} />
+              <TempHumidityCard
+                temperature={isDeviceOffline ? null : data.temperature}
+                humidity={isDeviceOffline ? null : data.humidity}
+                isOffline={isDeviceOffline}
+              />
 
               {/* MQ-2 Gas level */}
               <StatusCard
                 icon="🧪"
                 label="MQ-2 Gas"
-                value={data.gasLevel}
+                value={isDeviceOffline ? null : data.gasLevel}
                 unit="ppm"
-                color={data.gasLevel >= 450 ? "red" : data.gasLevel >= 320 ? "orange" : "green"}
-                sublabel={data.gasLevel >= 450 ? "Critical gas concentration" : data.gasLevel >= 320 ? "Elevated gas levels" : "Air quality stable"}
+                color={isDeviceOffline ? "blue" : data.gasLevel >= 450 ? "red" : data.gasLevel >= 320 ? "orange" : "green"}
+                sublabel={isDeviceOffline ? "Sensor offline" : data.gasLevel >= 450 ? "Critical gas concentration" : data.gasLevel >= 320 ? "Elevated gas levels" : "Air quality stable"}
               />
 
               {/* Status */}
@@ -202,7 +207,10 @@ export default function App() {
                   </div>
                 </div>
                 <div className="flex-1 min-h-0 w-full">
-                  <TempHistoryChart data={tempHistory} />
+                  <TempHistoryChart
+                    data={isDeviceOffline ? [] : tempHistory}
+                    emptyMessage={isDeviceOffline ? "N/A (Device offline)" : "Waiting for temperature data..."}
+                  />
                 </div>
               </div>
             </section>

@@ -25,11 +25,11 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function TempHistoryChart({ data }) {
+export default function TempHistoryChart({ data, emptyMessage = "Waiting for temperature data..." }) {
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
-        <p>Waiting for temperature data...</p>
+        <p>{emptyMessage}</p>
       </div>
     );
   }

@@ -31,6 +31,7 @@ export default function StatusCard({ icon, label, value, unit, color = "green", 
   };
 
   const c = colorMap[color] || colorMap.green;
+  const hasValue = value !== null && value !== undefined;
 
   return (
     <div
@@ -51,8 +52,8 @@ export default function StatusCard({ icon, label, value, unit, color = "green", 
 
         {/* Value */}
         <div className="flex items-end gap-1 mt-2">
-          <span className={`text-4xl font-bold ${c.text} leading-none`}>{value ?? "—"}</span>
-          {unit && <span className="text-lg text-gray-600 mb-0.5">{unit}</span>}
+          <span className={`text-4xl font-bold ${c.text} leading-none`}>{hasValue ? value : "N/A"}</span>
+          {unit && hasValue && <span className="text-lg text-gray-600 mb-0.5">{unit}</span>}
         </div>
 
         {sublabel && (

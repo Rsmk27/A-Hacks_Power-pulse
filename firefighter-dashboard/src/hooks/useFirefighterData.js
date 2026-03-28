@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, update } from "firebase/database";
 import { db } from "../firebase/config";
 
 // ── Demo data seed ─────────────────────────────────────────────────────────
@@ -54,6 +54,7 @@ function buildDemoHistory() {
 
 // ── How long (ms) to wait for Firebase before auto-switching to demo ───────
 const FIREBASE_TIMEOUT_MS = 6000;
+const OFFLINE_AFTER_SECONDS = 30;
 
 /**
  * useFirefighterData
@@ -74,6 +75,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
   const demoIntervalRef = useRef(null);
   const firebaseUnsubRef = useRef(null);
   const timeoutRef = useRef(null);
+  const offlineMarkedRef = useRef(false);
 
   // ── Demo runner ───────────────────────────────────────────────────────────
   const startDemo = useCallback(() => {
@@ -132,6 +134,11 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
             status: raw.status ?? "unknown",
             lastUpdated: raw.last_updated ?? Math.floor(Date.now() / 1000),
           };
+          const nowUnix = Math.floor(Date.now() / 1000);
+          const staleSeconds = nowUnix - parsed.lastUpdated;
+          if (staleSeconds <= OFFLINE_AFTER_SECONDS) {
+            offlineMarkedRef.current = false;
+          }
           setData(parsed);
           setTempHistory((prev) => {
             const next = [
@@ -159,6 +166,36 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
       }
     );
   }, [firefighterId]);
+
+  useEffect(() => {
+    if (mode !== "live" || !firebaseOk || !data) return;
+
+    const interval = setInterval(async () => {
+      const nowUnix = Math.floor(Date.now() / 1000);
+      const staleSeconds = nowUnix - (data.lastUpdated ?? nowUnix);
+      const alreadyOffline = data.status === "offline";
+
+      if (staleSeconds > OFFLINE_AFTER_SECONDS && !offlineMarkedRef.current && !alreadyOffline) {
+        try {
+          await update(ref(db, firefighterId), {
+            status: "offline",
+            state: "offline",
+            temperature: null,
+            humidity: null,
+            gas_ppm: null,
+            gas_level: null,
+            gasLevel: null,
+            fall_detected: null,
+          });
+          offlineMarkedRef.current = true;
+        } catch (err) {
+          console.error("Failed to mark device offline:", err);
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [mode, firebaseOk, data, firefighterId]);
 
   const stopLive = useCallback(() => {
     clearTimeout(timeoutRef.current);

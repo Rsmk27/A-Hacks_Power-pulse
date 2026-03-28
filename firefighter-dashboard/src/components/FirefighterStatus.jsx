@@ -26,6 +26,15 @@ const statusConfig = {
     dot: "bg-red-500 animate-ping",
     pulsing: true,
   },
+  offline: {
+    label: "OFFLINE",
+    emoji: "📡",
+    color: "text-slate-600",
+    border: "border-slate-300",
+    bg: "bg-slate-100",
+    dot: "bg-slate-500",
+    pulsing: false,
+  },
   unknown: {
     label: "UNKNOWN",
     emoji: "❓",
@@ -70,6 +79,7 @@ export default function FirefighterStatus({ status }) {
           {status === "safe" && "Firefighter is operating normally"}
           {status === "warning" && "Attention required — monitor closely"}
           {status === "critical" && "Emergency! Immediate action required!"}
+          {status === "offline" && "No telemetry received for over 30 seconds"}
           {status === "unknown" && "Waiting for device signal..."}
         </p>
       </div>
