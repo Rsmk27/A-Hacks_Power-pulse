@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, update } from "firebase/database";
 import { db } from "../firebase/config";
 
 // ── Demo data seed ─────────────────────────────────────────────────────────
@@ -11,11 +11,6 @@ const BASE_DEMO = {
   gps: { lat: 16.508981286911585, lng: 80.65806564630255 },
   gpsFallback: true,
   status: "safe",
-  heartRate: 85,
-  spo2: 98,
-  battery: 88,
-  signal: 4,
-  connectionStatus: "Connected",
   lastUpdated: Math.floor(Date.now() / 1000),
 };
 
@@ -33,16 +28,13 @@ function buildDemoSnapshot(tick) {
   if (temp >= 55 || gasLevel >= 450) status = "critical";
   else if (temp >= 47 || gasLevel >= 320) status = "warning";
 
-  const heartRate = Math.round(85 + Math.sin(tick * 0.3) * 15 + (Math.random() - 0.5) * 5);
-  const spo2 = Math.round(98 - Math.max(0, (temp - 45) / 5) * 2 - (gasLevel > 300 ? 5 : 0) + (Math.random() - 0.5));
-
   return {
-    ...BASE_DEMO,
     temperature: temp,
     humidity,
     gasLevel,
-    heartRate,
-    spo2,
+    fallDetected: false,
+    gps: BASE_DEMO.gps,
+    gpsFallback: true,
     status,
     lastUpdated: Math.floor(Date.now() / 1000),
   };
@@ -62,6 +54,7 @@ function buildDemoHistory() {
 
 // ── How long (ms) to wait for Firebase before auto-switching to demo ───────
 const FIREBASE_TIMEOUT_MS = 6000;
+const OFFLINE_AFTER_SECONDS = 30;
 
 /**
  * useFirefighterData
@@ -82,6 +75,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
   const demoIntervalRef = useRef(null);
   const firebaseUnsubRef = useRef(null);
   const timeoutRef = useRef(null);
+  const offlineMarkedRef = useRef(false);
 
   // ── Demo runner ───────────────────────────────────────────────────────────
   const startDemo = useCallback(() => {
@@ -138,13 +132,15 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
             gps: hasValidGps ? rawGps : { lat: 16.508981286911585, lng: 80.65806564630255 },
             gpsFallback: !hasValidGps,
             status: raw.status ?? "unknown",
-            heartRate: raw.heartRate ?? Math.round(85 + Math.random() * 5),
-            spo2: raw.spo2 ?? 98,
-            battery: raw.battery ?? 88,
-            signal: raw.signal ?? 4,
-            connectionStatus: "Connected",
+            state: raw.state ?? null,
+            deviceState: raw.device_state ?? null,
             lastUpdated: raw.last_updated ?? Math.floor(Date.now() / 1000),
           };
+          const nowUnix = Math.floor(Date.now() / 1000);
+          const staleSeconds = nowUnix - parsed.lastUpdated;
+          if (staleSeconds <= OFFLINE_AFTER_SECONDS) {
+            offlineMarkedRef.current = false;
+          }
           setData(parsed);
           setTempHistory((prev) => {
             const next = [
@@ -173,6 +169,44 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
     );
   }, [firefighterId]);
 
+  useEffect(() => {
+    if (mode !== "live" || !firebaseOk || !data) return;
+
+    const interval = setInterval(async () => {
+      const nowUnix = Math.floor(Date.now() / 1000);
+      const staleSeconds = nowUnix - (data.lastUpdated ?? nowUnix);
+      const alreadyOffline =
+        data.status === "offline" &&
+        data.state === "offline" &&
+        data.deviceState === "offline" &&
+        data.temperature == null &&
+        data.humidity == null &&
+        data.gasLevel == null &&
+        data.fallDetected == null;
+
+      if (staleSeconds > OFFLINE_AFTER_SECONDS && !offlineMarkedRef.current && !alreadyOffline) {
+        try {
+          await update(ref(db, firefighterId), {
+            status: "offline",
+            state: "offline",
+            device_state: "offline",
+            temperature: null,
+            humidity: null,
+            gas_ppm: null,
+            gas_level: null,
+            gasLevel: null,
+            fall_detected: null,
+          });
+          offlineMarkedRef.current = true;
+        } catch (err) {
+          console.error("Failed to mark device offline:", err);
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [mode, firebaseOk, data, firefighterId]);
+
   const stopLive = useCallback(() => {
     clearTimeout(timeoutRef.current);
     if (firebaseUnsubRef.current) {
@@ -200,7 +234,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
       stopDemo();
       stopLive();
     };
-  }, [mode, firefighterId]); // Re-run when mode or dataset ID changes
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleMode = useCallback(() => {
     setMode((prev) => (prev === "live" ? "demo" : "live"));
