@@ -16,10 +16,9 @@
 }
 
 html, body, #root {
-  height: 100vh;
+  height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
 }
 
 body {
@@ -28,6 +27,7 @@ body {
   color: #111827;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* Scrollbar */
@@ -105,12 +105,15 @@ body {
 }
 
 .ff-marker-core {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 9999px;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
   border: 2px solid #ffffff;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
   animation: pulse 1.5s infinite;
   user-select: none;
 }
@@ -128,20 +131,20 @@ body {
 .ff-marker-label {
   position: absolute;
   left: 50%;
-  bottom: 64px;
-  transform: translateX(-50%) translateY(10px);
+  bottom: 56px;
+  transform: translateX(-50%) translateY(4px);
   white-space: nowrap;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 4px 8px;
+  border-radius: 9999px;
   font-size: 11px;
-  font-weight: 800;
-  color: #ffffff;
-  background: #0f172a;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
+  color: #111827;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #d1d5db;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
   opacity: 0;
   pointer-events: none;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid #334155;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .ff-marker-host:hover .ff-marker-label {
@@ -149,34 +152,8 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-.ff-marker-host:hover {
-  z-index: 50;
-}
-
 .ff-marker-live .ff-marker-core {
   background: radial-gradient(circle at 35% 30%, #fed7aa 0%, #f97316 80%);
-  position: relative;
-}
-
-.ff-marker-live .ff-marker-core::before,
-.ff-marker-live .ff-marker-core::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 3px solid #f97316;
-  opacity: 0;
-  transform: translate(-50%, -50%);
-  animation: radar-pulse 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.ff-marker-live .ff-marker-core::after {
-  animation-delay: 1.2s;
 }
 
 .ff-marker-live .ff-marker-tail {
@@ -197,11 +174,6 @@ body {
   100% { transform: scale(1); }
 }
 
-@keyframes radar-pulse {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-  100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
-}
-
 /* Custom animations */
 @keyframes pulse-border {
   0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
@@ -211,26 +183,6 @@ body {
 
 .animate-pulse-border {
   animation: pulse-border 2s infinite;
-}
-
-/* Liquid Fill for Progress bars */
-.liquid-bar {
-  position: relative;
-  overflow: hidden;
-}
-.liquid-bar::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -200%;
-  width: 200%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-  animation: liquid-flow 2s infinite linear;
-}
-@keyframes liquid-flow {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(100%); }
 }
 
 /* Recharts overrides */

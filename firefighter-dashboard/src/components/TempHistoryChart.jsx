@@ -14,9 +14,9 @@ const CustomTooltip = ({ active, payload, label }) => {
     const temp = payload[0].value;
     const color = temp >= 60 ? "#ef4444" : temp >= 45 ? "#f97316" : "#10b981";
     return (
-      <div className="bg-white/95 border border-slate-300 backdrop-blur rounded p-3 shadow-lg">
-        <p className="text-[10px] text-slate-500 mb-1 font-mono font-bold uppercase tracking-widest">{label}</p>
-        <p className="text-2xl font-bold font-mono" style={{ color }}>
+      <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-xl">
+        <p className="text-xs text-gray-600 mb-1">{label}</p>
+        <p className="text-lg font-bold" style={{ color }}>
           {temp.toFixed(1)}°C
         </p>
       </div>
@@ -37,18 +37,18 @@ export default function TempHistoryChart({ data, emptyMessage = "Waiting for tem
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
         <XAxis
           dataKey="time"
-          tick={{ fill: "#64748b", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }}
-          axisLine={{ stroke: "#cbd5e1" }}
+          tick={{ fill: "#6b7280", fontSize: 10, fontFamily: "Space Grotesk" }}
+          axisLine={{ stroke: "#d1d5db" }}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
           domain={["auto", "auto"]}
-          tick={{ fill: "#64748b", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }}
-          axisLine={{ stroke: "#cbd5e1" }}
+          tick={{ fill: "#6b7280", fontSize: 10, fontFamily: "Space Grotesk" }}
+          axisLine={{ stroke: "#d1d5db" }}
           tickLine={false}
           tickFormatter={(v) => `${v}°`}
         />
@@ -58,7 +58,7 @@ export default function TempHistoryChart({ data, emptyMessage = "Waiting for tem
         <Line
           type="monotone"
           dataKey="temp"
-          stroke="#0ea5e9"
+          stroke="#FF4500"
           strokeWidth={2.5}
           dot={(props) => {
             const { cx, cy, payload } = props;
@@ -67,7 +67,7 @@ export default function TempHistoryChart({ data, emptyMessage = "Waiting for tem
               <circle key={`dot-${cx}-${cy}`} cx={cx} cy={cy} r={3} fill={color} stroke="transparent" />
             );
           }}
-          activeDot={{ r: 5, fill: "#0ea5e9", stroke: "#ffffff", strokeWidth: 2 }}
+          activeDot={{ r: 5, fill: "#FF4500", stroke: "#fff", strokeWidth: 1 }}
           isAnimationActive={true}
           animationDuration={300}
         />
