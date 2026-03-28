@@ -9,6 +9,7 @@ const BASE_DEMO = {
   gasLevel: 240,
   fallDetected: false,
   gps: { lat: 16.508981286911585, lng: 80.65806564630255 },
+  gpsFallback: true,
   status: "safe",
   lastUpdated: Math.floor(Date.now() / 1000),
 };
@@ -33,6 +34,7 @@ function buildDemoSnapshot(tick) {
     gasLevel,
     fallDetected: false,
     gps: BASE_DEMO.gps,
+    gpsFallback: true,
     status,
     lastUpdated: Math.floor(Date.now() / 1000),
   };
@@ -118,12 +120,15 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
         setFirebaseOk(true);
         if (snapshot.exists()) {
           const raw = snapshot.val();
+          const rawGps = raw.gps;
+          const hasValidGps = rawGps?.lat != null && rawGps?.lng != null;
           const parsed = {
             temperature: raw.temperature ?? 0,
             humidity: raw.humidity ?? 0,
             gasLevel: raw.gas_ppm ?? raw.gas_level ?? raw.gasLevel ?? 240,
             fallDetected: raw.fall_detected ?? false,
-            gps: raw.gps ?? { lat: 16.508981286911585, lng: 80.65806564630255 },
+            gps: hasValidGps ? rawGps : { lat: 16.508981286911585, lng: 80.65806564630255 },
+            gpsFallback: !hasValidGps,
             status: raw.status ?? "unknown",
             lastUpdated: raw.last_updated ?? Math.floor(Date.now() / 1000),
           };

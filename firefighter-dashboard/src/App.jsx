@@ -176,7 +176,7 @@ export default function App() {
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-1 sm:gap-2 w-full flex-1 min-h-0">
               {/* GPS Map */}
               <div className="rounded-xl border border-gray-200 bg-white overflow-hidden w-full min-h-[140px] sm:min-h-[160px]">
-                <GPSMap gps={data.gps} />
+                <GPSMap gps={data.gps} gpsFallback={data.gpsFallback} />
               </div>
 
               {/* Temperature History Chart */}

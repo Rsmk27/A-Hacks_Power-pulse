@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 
-const DEFAULT_CENTER = [16.5062, 80.648];
-const OPEN_3D_STYLE = {
+const DEFAULT_CENTER = [16.508981286911585, 80.65806564630255];
+const OPEN_VECTOR_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+const RASTER_FALLBACK_STYLE = {
   version: 8,
   sources: {
     osm: {
@@ -39,12 +40,29 @@ const OPEN_3D_STYLE = {
   },
 };
 
-export default function GPSMap({ gps }) {
+function getMarkerHTML(hasLiveGps) {
+  const title = hasLiveGps ? "Firefighter 01" : "Default Location";
+  const emoji = "🔥";
+  const rootClass = hasLiveGps ? "ff-marker-root ff-marker-live" : "ff-marker-root ff-marker-default";
+
+  return `
+    <div class="${rootClass}" title="${title}">
+      <div class="ff-marker-core">${emoji}</div>
+      <div class="ff-marker-tail"></div>
+      <div class="ff-marker-label">${title}</div>
+    </div>
+  `;
+}
+
+export default function GPSMap({ gps, gpsFallback = false }) {
+  const hasLiveGps = !gpsFallback && gps?.lat != null && gps?.lng != null;
   const lat = gps?.lat ?? DEFAULT_CENTER[0];
   const lng = gps?.lng ?? DEFAULT_CENTER[1];
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+  const popupRef = useRef(null);
+  const hasFallbackRef = useRef(false);
   const [mapError, setMapError] = useState(false);
 
   useEffect(() => {
@@ -52,10 +70,10 @@ export default function GPSMap({ gps }) {
 
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: OPEN_3D_STYLE,
+      style: OPEN_VECTOR_STYLE_URL,
       center: [lng, lat],
       zoom: 15,
-      pitch: 60,
+      pitch: 62,
       bearing: -20,
       antialias: true,
     });
@@ -64,10 +82,53 @@ export default function GPSMap({ gps }) {
 
     map.on("load", () => {
       setMapError(false);
+      hasFallbackRef.current = false;
+
+      // Force 3D building visibility for vector styles that expose building footprints.
+      const has3DBuildingLayer = !!map.getLayer("building-3d");
+      if (has3DBuildingLayer) {
+        map.setLayoutProperty("building-3d", "visibility", "visible");
+      } else {
+        const style = map.getStyle();
+        const vectorSourceName = Object.keys(style?.sources || {}).find(
+          (sourceName) => style.sources[sourceName]?.type === "vector"
+        );
+        const symbolLayerId = style?.layers?.find((layer) => layer.type === "symbol")?.id;
+
+        if (vectorSourceName && !map.getLayer("firefighter-buildings-3d")) {
+          map.addLayer(
+            {
+              id: "firefighter-buildings-3d",
+              source: vectorSourceName,
+              "source-layer": "building",
+              type: "fill-extrusion",
+              minzoom: 14,
+              paint: {
+                "fill-extrusion-color": "#cbd5e1",
+                "fill-extrusion-height": ["coalesce", ["get", "render_height"], ["get", "height"], 12],
+                "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], ["get", "min_height"], 0],
+                "fill-extrusion-opacity": 0.72,
+              },
+            },
+            symbolLayerId
+          );
+        }
+      }
+
       map.resize();
     });
 
     map.on("error", () => {
+      // If vector style fails (network/CORS), fallback once to raster so map still loads.
+      if (!hasFallbackRef.current) {
+        hasFallbackRef.current = true;
+        try {
+          map.setStyle(RASTER_FALLBACK_STYLE);
+          return;
+        } catch (e) {
+          console.warn("Failed to switch map fallback style", e);
+        }
+      }
       setMapError(true);
     });
 
@@ -75,14 +136,18 @@ export default function GPSMap({ gps }) {
     window.addEventListener("resize", handleResize);
 
     const markerElement = document.createElement("div");
-    markerElement.className = "fire-marker-3d";
-    markerElement.textContent = "🔥";
+    markerElement.className = "ff-marker-host";
+    markerElement.innerHTML = getMarkerHTML(hasLiveGps);
 
-    const popup = new maplibregl.Popup({ offset: 24 }).setHTML(
-      `<div style="font-family: Space Grotesk, sans-serif; min-width: 160px; color: #111827;">
-        <strong>🔥 Firefighter 01</strong><br/>
+    const popup = new maplibregl.Popup({ offset: 24 });
+    popupRef.current = popup;
+
+    popup.setHTML(
+      `<div style="font-family: Space Grotesk, sans-serif; min-width: 180px; color: #111827;">
+        <strong>${hasLiveGps ? "🔥 Firefighter 01" : "📍 Default Location"}</strong><br/>
         <small>Lat: ${lat.toFixed(6)}</small><br/>
-        <small>Lng: ${lng.toFixed(6)}</small>
+        <small>Lng: ${lng.toFixed(6)}</small><br/>
+        <small style="color:#6b7280;">${hasLiveGps ? "Live device GPS" : "Using fallback coordinates"}</small>
       </div>`
     );
 
@@ -98,16 +163,28 @@ export default function GPSMap({ gps }) {
       markerRef.current?.remove();
       mapRef.current?.remove();
       markerRef.current = null;
+      popupRef.current = null;
       mapRef.current = null;
     };
-  }, [lat, lng]);
+  }, [lat, lng, hasLiveGps]);
 
   useEffect(() => {
-    if (!mapRef.current || !markerRef.current) return;
+    if (!mapRef.current || !markerRef.current || !popupRef.current) return;
 
+    const markerElement = markerRef.current.getElement();
+    markerElement.className = "ff-marker-host";
+    markerElement.innerHTML = getMarkerHTML(hasLiveGps);
     markerRef.current.setLngLat([lng, lat]);
+    popupRef.current.setHTML(
+      `<div style="font-family: Space Grotesk, sans-serif; min-width: 180px; color: #111827;">
+        <strong>${hasLiveGps ? "🔥 Firefighter 01" : "📍 Default Location"}</strong><br/>
+        <small>Lat: ${lat.toFixed(6)}</small><br/>
+        <small>Lng: ${lng.toFixed(6)}</small><br/>
+        <small style="color:#6b7280;">${hasLiveGps ? "Live device GPS" : "Using fallback coordinates"}</small>
+      </div>`
+    );
     mapRef.current.easeTo({ center: [lng, lat], duration: 1000 });
-  }, [lat, lng]);
+  }, [lat, lng, hasLiveGps]);
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden h-full flex flex-col">
@@ -116,6 +193,11 @@ export default function GPSMap({ gps }) {
         <div className="flex items-center gap-2">
           <span className="text-lg">🗺️</span>
           <span className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Live GPS Tracking</span>
+          {!hasLiveGps && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+              DEFAULT PIN
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-600">
           <span>LAT: <span className="text-emerald-600 font-mono">{lat.toFixed(4)}</span></span>
