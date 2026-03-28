@@ -69,8 +69,15 @@ Follow these instructions to run Power Pulse on your local machine.
 4. Open your browser and navigate to the localhost port provided in your terminal (usually `http://localhost:3000` or `http://localhost:5173`).
 
 ## 👥 Team
-*   **[Your Name / Alias]** - *Role (e.g., Full Stack Developer)* - [GitHub](https://github.com/yourusername) | [LinkedIn](https://linkedin.com/in/yourprofile)
-*   **[Teammate Name]** - *Role* - [GitHub](https://github.com/) | [LinkedIn](https://linkedin.com/)
+**Team Name:** Fire Fighter Safety Device
+
+### Hardware
+*   **Sairam** - [GitHub](https://github.com/) | [LinkedIn](https://linkedin.com/)
+*   **Santhosh** - [GitHub](https://github.com/) | [LinkedIn](https://linkedin.com/)
+
+### Software
+*   **R.S.Manikanta** - [GitHub](https://github.com/) | [LinkedIn](https://linkedin.com/)
+*   **Ramu** - [GitHub](https://github.com/) | [LinkedIn](https://linkedin.com/)
 
 ---
 *Created for the A-Hacks 2026 Hackathon.*
