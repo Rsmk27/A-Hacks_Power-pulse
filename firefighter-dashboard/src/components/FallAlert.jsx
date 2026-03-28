@@ -26,6 +26,7 @@ function playAlertSound() {
 
 export default function FallAlert({ fallDetected }) {
   const prevFall = useRef(false);
+  const alarmLoopRef = useRef(null);
 
   useEffect(() => {
     if (fallDetected && !prevFall.current) {
@@ -42,6 +43,27 @@ export default function FallAlert({ fallDetected }) {
       });
     }
     prevFall.current = fallDetected;
+  }, [fallDetected]);
+
+  useEffect(() => {
+    if (fallDetected && !alarmLoopRef.current) {
+      // Keep sounding the emergency alarm while alert is active.
+      alarmLoopRef.current = setInterval(() => {
+        playAlertSound();
+      }, 700);
+    }
+
+    if (!fallDetected && alarmLoopRef.current) {
+      clearInterval(alarmLoopRef.current);
+      alarmLoopRef.current = null;
+    }
+
+    return () => {
+      if (alarmLoopRef.current) {
+        clearInterval(alarmLoopRef.current);
+        alarmLoopRef.current = null;
+      }
+    };
   }, [fallDetected]);
 
   if (!fallDetected) {

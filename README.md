@@ -68,6 +68,17 @@ Follow these instructions to run Power Pulse on your local machine.
    ```
 4. Open your browser and navigate to the localhost port provided in your terminal (usually `http://localhost:3000` or `http://localhost:5173`).
 
+## 🖼️ Dashboard Gallery
+
+### Live Monitoring View
+![Live Monitoring View](gallery/Screenshot%202026-03-28%20184318.png)
+
+### Warning State View
+![Warning State View](gallery/Screenshot%202026-03-28%20184350.png)
+
+### Emergency / Fall Alert View
+![Emergency Fall Alert View](gallery/emergency-.png)
+
 ## 👥 Team
 **Team Name:** Fire Fighter Safety Device
 
