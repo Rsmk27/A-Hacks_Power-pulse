@@ -80,6 +80,7 @@ Main website dependencies currently configured:
 - Framework: React Native
 - Runtime/Tooling: Expo
 - SDK: Expo SDK 55
+- APK Download: [Download FFSD App](https://github.com/ramunarlapati-13/FFSD/releases/download/FFSD/ffsd.apk)
 
 ## Repository Structure
 - esp32-firmware/: Embedded firmware for the firefighter unit.
@@ -133,3 +134,16 @@ Team Name: Fire Fighter Safety Device
 
 ---
 Created for the A-Hacks 2026 Hackathon.
+
+## Team Name
+Power Pulse
+
+## Team Members
+1. R Srinivasa Manikanta
+2. N Ramu
+3. G Sairam
+4. J Santhosh
+
+## Acknowledgements
+Thanks to Aliet Techpreneur Club for conducting events like A-Hacks.
+Thanks to ALIET college management.
