@@ -14,14 +14,22 @@ const BASE_DEMO = {
   lastUpdated: Math.floor(Date.now() / 1000),
 };
 
+function getSeedFromId(id) {
+  return String(id)
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+}
+
 /** Build a richer animated demo data set with a subtle simulation curve */
-function buildDemoSnapshot(tick) {
+function buildDemoSnapshot(tick, seed = 0) {
+  const phase = (seed % 17) * 0.07;
+
   // Temperature oscillates between 39 – 55 °C and occasionally spikes
-  const tempBase = 42 + Math.sin(tick * 0.18) * 4 + Math.sin(tick * 0.07) * 3;
+  const tempBase = 42 + Math.sin(tick * 0.18 + phase) * 4 + Math.sin(tick * 0.07 + phase * 0.6) * 3;
   const temp = parseFloat((tempBase + (Math.random() - 0.5) * 0.8).toFixed(1));
 
-  const humidity = parseFloat((68 + Math.sin(tick * 0.12) * 6 + (Math.random() - 0.5) * 2).toFixed(1));
-  const gasLevel = Math.max(80, Math.round(220 + Math.sin(tick * 0.2) * 70 + (Math.random() - 0.5) * 35));
+  const humidity = parseFloat((68 + Math.sin(tick * 0.12 + phase) * 6 + (Math.random() - 0.5) * 2).toFixed(1));
+  const gasLevel = Math.max(80, Math.round(220 + Math.sin(tick * 0.2 + phase) * 70 + (Math.random() - 0.5) * 35));
 
   // Status escalates when temp is high
   let status = "safe";
@@ -41,12 +49,13 @@ function buildDemoSnapshot(tick) {
 }
 
 /** Generate a realistic seed history for the chart (last 20 readings) */
-function buildDemoHistory() {
+function buildDemoHistory(seed = 0) {
   const history = [];
   const now = Date.now();
+  const phase = (seed % 13) * 0.09;
   for (let i = 19; i >= 0; i--) {
     const t = new Date(now - i * 5000);
-    const temp = parseFloat((38 + Math.sin(i * 0.4) * 5 + (Math.random() - 0.5) * 1.2).toFixed(1));
+    const temp = parseFloat((38 + Math.sin(i * 0.4 + phase) * 5 + (Math.random() - 0.5) * 1.2).toFixed(1));
     history.push({ time: t.toLocaleTimeString(), temp });
   }
   return history;
@@ -64,6 +73,7 @@ const OFFLINE_AFTER_SECONDS = 30;
  *   demo  → runs animated mock data immediately, no Firebase attempt
  */
 export function useFirefighterData(firefighterId = "firefighter_01", initialMode = "live") {
+  const fighterSeed = getSeedFromId(firefighterId);
   const [mode, setMode] = useState(initialMode);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -86,22 +96,22 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
   // ── Demo runner ───────────────────────────────────────────────────────────
   const startDemo = useCallback(() => {
     // Seed history immediately
-    setTempHistory(buildDemoHistory());
+    setTempHistory(buildDemoHistory(fighterSeed));
     // Instant first data point
-    const snap = buildDemoSnapshot(tickRef.current++);
+    const snap = buildDemoSnapshot(tickRef.current++, fighterSeed);
     setData(snap);
     setLoading(false);
 
     // Animate every 3 s
     demoIntervalRef.current = setInterval(() => {
-      const snap = buildDemoSnapshot(tickRef.current++);
+      const snap = buildDemoSnapshot(tickRef.current++, fighterSeed);
       setData(snap);
       setTempHistory((prev) => {
         const next = [...prev, { time: new Date().toLocaleTimeString(), temp: snap.temperature }];
         return next.slice(-20);
       });
     }, 3000);
-  }, []);
+  }, [fighterSeed]);
 
   const stopDemo = useCallback(() => {
     if (demoIntervalRef.current) {
@@ -175,7 +185,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
           }
         } else {
           // Connected but node missing — show demo data as fallback
-          const snap = buildDemoSnapshot(tickRef.current++);
+          const snap = buildDemoSnapshot(tickRef.current++, fighterSeed);
           setData(snap);
         }
         setLoading(false);
@@ -188,7 +198,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
         setMode("demo"); // auto-fallback
       }
     );
-  }, [firefighterId]);
+  }, [firefighterId, fighterSeed]);
 
   useEffect(() => {
     if (mode !== "live" || !firebaseOk || !data) return;
@@ -232,6 +242,9 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
 
   // ── Main effect: react to mode changes ───────────────────────────────────
   useEffect(() => {
+    tickRef.current = 0;
+    setTempHistory([]);
+
     // Reset state
     setData(null);
     setLoading(true);
@@ -249,7 +262,7 @@ export function useFirefighterData(firefighterId = "firefighter_01", initialMode
       stopDemo();
       stopLive();
     };
-  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [firefighterId, mode, startDemo, startLive, stopDemo, stopLive]);
 
   const toggleMode = useCallback(() => {
     setMode((prev) => (prev === "live" ? "demo" : "live"));
