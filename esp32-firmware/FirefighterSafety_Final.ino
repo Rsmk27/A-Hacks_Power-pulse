@@ -5,6 +5,7 @@
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <time.h>
+#include <TinyGPS++.h>
 
 // ================= WIFI + FIREBASE (REST) =================
 const char* ssid = "YOUR_WIFI_SSID";
@@ -27,11 +28,17 @@ String firebaseAuth = "YOUR_FIREBASE_DB_SECRET_OR_LEAVE_EMPTY";
 #define SOS_BUTTON_GND     27
 #define BUZZER             13
 
-#define FIREBASE_NODE      "firefighter_01"
+// Set this per device so each ESP32 writes to its own firefighter node.
+#define FIREFIGHTER_ID      "firefighter_01"
 
-// ================= MOCK GPS (fixed as requested) =================
-const double MOCK_LAT = 16.508981286911585;
-const double MOCK_LNG = 80.65806564630255;
+// GPS module pins (example for NEO-6M/NEO-M8N on ESP32 Serial2)
+#define GPS_RX_PIN          16
+#define GPS_TX_PIN          17
+#define GPS_BAUD_RATE       9600
+
+// ================= GPS FALLBACK (used only when no live fix) =================
+const double DEFAULT_LAT = 16.508981286911585;
+const double DEFAULT_LNG = 80.65806564630255;
 
 // ================= MOVEMENT THRESHOLDS =================
 #define WARN_SECONDS       10
@@ -57,6 +64,11 @@ const double MOCK_LNG = 80.65806564630255;
 
 // ================= OBJECTS =================
 DHT dht(DHTPIN, DHTTYPE);
+TinyGPSPlus gpsParser;
+HardwareSerial GPSSerial(1);
+
+double lastKnownLat = DEFAULT_LAT;
+double lastKnownLng = DEFAULT_LNG;
 
 // ================= MPU RAW / FILTER STATE =================
 int16_t rawAx = 0, rawAy = 0, rawAz = 0;
@@ -360,6 +372,24 @@ void handleBuzzer(float temperature) {
   }
 }
 
+bool updateGpsFromModule(double &latitude, double &longitude) {
+  while (GPSSerial.available() > 0) {
+    gpsParser.encode(GPSSerial.read());
+  }
+
+  if (gpsParser.location.isValid()) {
+    latitude = gpsParser.location.lat();
+    longitude = gpsParser.location.lng();
+    lastKnownLat = latitude;
+    lastKnownLng = longitude;
+    return true;
+  }
+
+  latitude = lastKnownLat;
+  longitude = lastKnownLng;
+  return false;
+}
+
 void sendToFirebase(float temperature, float humidity, float gasPpm, bool fallDetected, double latitude, double longitude) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi disconnected");
@@ -370,7 +400,7 @@ void sendToFirebase(float temperature, float humidity, float gasPpm, bool fallDe
   client.setInsecure();
 
   HTTPClient https;
-  String url = firebaseHost + "/" FIREBASE_NODE ".json";
+  String url = firebaseHost + "/" + String(FIREFIGHTER_ID) + ".json";
   if (firebaseAuth.length() > 0) {
     url += "?auth=" + firebaseAuth;
   }
@@ -434,6 +464,8 @@ void setup() {
 
   pinMode(MQ2_PIN, INPUT);
 
+  GPSSerial.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+
   lastAmbientBurstTime = millis();
   Serial.println("Firefighter safety firmware started");
 }
@@ -441,7 +473,7 @@ void setup() {
 void loop() {
   systemStatus = "OK";
   deviceState = "NORMAL";
-  gpsStatus = "MOCK";
+  gpsStatus = "NO_FIX";
 
   updateSosToggle();
   updateMPUAndMotion();
@@ -479,6 +511,11 @@ void loop() {
     deviceState = "SOS";
   }
 
+  double gpsLat = DEFAULT_LAT;
+  double gpsLng = DEFAULT_LNG;
+  const bool gpsLive = updateGpsFromModule(gpsLat, gpsLng);
+  gpsStatus = gpsLive ? "LIVE" : "LAST_KNOWN";
+
   handleBuzzer(temperature);
 
   if (millis() - lastSendMs >= SEND_INTERVAL_MS) {
@@ -489,8 +526,8 @@ void loop() {
       humidity,
       gasPpm,
       fallDetected,
-      MOCK_LAT,
-      MOCK_LNG
+      gpsLat,
+      gpsLng
     );
 
     Serial.println("\n==== FIREFIGHTER REPORT ====");
@@ -503,7 +540,8 @@ void loop() {
     Serial.print("Humidity: "); Serial.println(humidity, 1);
     Serial.print("Gas PPM: "); Serial.println(gasPpm, 1);
     Serial.print("Fall Detected: "); Serial.println(fallDetected ? "YES" : "NO");
-    Serial.print("GPS Lat/Lng: "); Serial.print(MOCK_LAT, 6); Serial.print(" / "); Serial.println(MOCK_LNG, 6);
+    Serial.print("GPS Lat/Lng: "); Serial.print(gpsLat, 6); Serial.print(" / "); Serial.println(gpsLng, 6);
+    Serial.print("GPS Fix: "); Serial.println(gpsLive ? "LIVE" : "LAST_KNOWN");
     Serial.print("SOS Active: "); Serial.println(sosActive ? "YES" : "NO");
     Serial.println("============================");
   }

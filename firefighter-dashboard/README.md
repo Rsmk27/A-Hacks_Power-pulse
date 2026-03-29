@@ -1,16 +1,55 @@
-# React + Vite
+# Firefighter Dashboard (Power Pulse)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web monitoring dashboard for the Power Pulse firefighter safety system.
 
-Currently, two official plugins are available:
+## Stack
+- Framework: React 19
+- Build tool: Vite 8
+- Styling: Tailwind CSS 3 + PostCSS
+- Realtime backend: Firebase Realtime Database
+- Mapping: MapLibre GL
+- Charts: Recharts
+- Alerts: React Hot Toast
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Dependencies
+### Runtime dependencies
+- firebase
+- leaflet
+- maplibre-gl
+- react
+- react-dom
+- react-hot-toast
+- react-leaflet
+- recharts
 
-## React Compiler
+### Dev dependencies
+- @vitejs/plugin-react
+- eslint and related plugins
+- tailwindcss
+- postcss
+- autoprefixer
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Scripts
+- npm run dev: start development server
+- npm run build: build production bundle
+- npm run preview: preview production build
+- npm run lint: run lint checks
 
-## Expanding the ESLint configuration
+## Environment and Data
+- Reads firefighter telemetry from Firebase Realtime Database.
+- Supports multiple firefighter IDs from the dashboard UI.
+- Displays live values for temperature, humidity, gas level, fall detection, status, and GPS.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Run Locally
+1. Install dependencies:
+	```bash
+	npm install
+	```
+2. Start development server:
+	```bash
+	npm run dev
+	```
+3. Build production output:
+	```bash
+	npm run build
+	```

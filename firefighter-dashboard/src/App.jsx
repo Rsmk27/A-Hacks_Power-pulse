@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { useFirefighterData } from "./hooks/useFirefighterData";
 import StatusCard from "./components/StatusCard";
@@ -18,7 +18,6 @@ const FIREFIGHTER_UNITS = [
 ];
 
 const PRIMARY_REAL_UNIT_ID = "firefighter_01";
-const REMAINING_VISIBLE_UNIT_IDS = ["firefighter_02", "firefighter_03"];
 
 const STATUS_CLASS_MAP = {
   safe: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -122,7 +121,7 @@ export default function App() {
   const [activeFirefighterId, setActiveFirefighterId] = useState(PRIMARY_REAL_UNIT_ID);
   const [rosterTick, setRosterTick] = useState(0);
   const { data, loading, error, tempHistory, mode, firebaseOk, toggleMode } =
-    useFirefighterData(PRIMARY_REAL_UNIT_ID, "live");
+    useFirefighterData(activeFirefighterId, "live");
 
   useEffect(() => {
     const t = setInterval(() => setRosterTick((prev) => prev + 1), 4000);
@@ -130,17 +129,7 @@ export default function App() {
   }, []);
 
   const activeUnit = FIREFIGHTER_UNITS.find((unit) => unit.id === activeFirefighterId) ?? FIREFIGHTER_UNITS[0];
-  const isRealDataMode = activeFirefighterId === PRIMARY_REAL_UNIT_ID;
-  const displayData = isRealDataMode ? data : buildMockRosterSnapshot(activeFirefighterId, rosterTick);
-
-  const remainingFighters = useMemo(() => {
-    return FIREFIGHTER_UNITS
-      .filter((unit) => REMAINING_VISIBLE_UNIT_IDS.includes(unit.id))
-      .map((unit, index) => ({
-        ...unit,
-        ...buildMockRosterSnapshot(unit.id, rosterTick + index * 3),
-      }));
-  }, [rosterTick]);
+  const displayData = data;
 
   const isDemo = mode === "demo";
   const isDeviceOffline = data?.status === "offline";
@@ -312,16 +301,7 @@ export default function App() {
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-1 sm:gap-2 w-full flex-1 min-h-0">
               {/* GPS Map */}
               <div className="rounded-xl border border-gray-200 bg-white overflow-hidden w-full h-full">
-                {isRealDataMode ? (
-                  <GPSMap gps={displayData.gps} gpsFallback={displayData.gpsFallback} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
-                    <div className="text-center">
-                      <p className="text-sm font-semibold text-blue-900 mb-1">Mock {activeUnit.label}</p>
-                      <p className="text-xs text-blue-700">Simulated GPS data</p>
-                    </div>
-                  </div>
-                )}
+                <GPSMap gps={displayData.gps} gpsFallback={displayData.gpsFallback} />
               </div>
 
               {/* Temperature History Chart */}
@@ -348,8 +328,8 @@ export default function App() {
                 </div>
                 <div className="flex-1 min-h-0 w-full">
                   <TempHistoryChart
-                    data={isRealDataMode ? tempHistory : []}
-                    emptyMessage={isRealDataMode ? (telemetryUnavailable ? "N/A (Device offline)" : "Waiting for temperature data...") : `Mock data for ${activeUnit.label}`}
+                    data={tempHistory}
+                    emptyMessage={telemetryUnavailable ? "N/A (Device offline)" : "Waiting for temperature data..."}
                   />
                 </div>
               </div>
@@ -393,7 +373,6 @@ export default function App() {
               </a>
 
               <div className="ml-auto flex items-center gap-1 flex-shrink-0">
-                {!isRealDataMode && <span className="text-blue-500 font-semibold text-xs">MOCK</span>}
                 <span className="text-orange-400 font-semibold text-xs">A-Hacks</span>
               </div>
             </section>
