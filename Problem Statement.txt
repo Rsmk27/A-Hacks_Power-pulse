@@ -1,0 +1,24 @@
+Problem Statement
+
+"When firefighters enter a burning building, the incident commander standing outside becomes completely blind — no location, no vitals, no awareness of whether the firefighter is safe or in danger. This information blackout costs lives."
+
+Problem Explanation
+
+Firefighting is one of the most dangerous jobs in the world. Every time a firefighter steps inside a burning building, they walk into an environment that is actively trying to kill them — extreme heat, toxic smoke, zero visibility, unstable structures, and rapidly changing conditions.
+The officer commanding the operation stands outside. They coordinate the team, manage resources, and make critical decisions. But the moment a firefighter crosses that threshold into the building, the commander loses all real visibility into what is happening.
+
+Techstack used:
+
+Hardware:
+ESP32Main microcontroller,
+DHT11Temperature & humidity sensing,
+MPU-6050Fall detection via accelerometer & gyroscope,
+NEO-6M GPSReal-time location tracking
+MQ-2 Gas Sensor
+
+Software:
+Arduino firmware development, 
+Firebase RTDB Real-time cloud database, 
+React + Vite Frontend dashboard 
+Tailwind CSSUI styling, 
+Leaflet.js Live GPS map

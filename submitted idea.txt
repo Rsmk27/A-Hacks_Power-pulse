@@ -1,0 +1,73 @@
+problem:
+
+Uniqueness
+Most firefighter monitoring systems that exist today are either too expensive for regular fire departments or only monitor one or two parameters. What makes this project unique is that it combines five critical safety parameters — temperature, humidity, smoke/gas levels, fall detection, and live GPS location — into a single low-cost wearable device that automatically streams everything to a live command dashboard in real time.
+The key word is automatic. The system requires zero action from the firefighter. It monitors, detects, and alerts on its own.
+
+Necessity
+Every year firefighters die inside burning buildings from causes that sensors can detect — heat stress, toxic gas inhalation, and fall injuries. The tragedy is not just the fire. It is the fact that the officer standing outside had no way of knowing something was wrong until it was too late.
+In India specifically, the vast majority of fire departments cannot afford advanced monitoring equipment. Firefighters walk into burning buildings every day with no wearable safety system, no location tracking, and no automated alert mechanism.
+The need is real, urgent, and largely unaddressed at an affordable level.
+
+IoT Architecture:
+Sensors
+
+DHT11 monitors temperature and humidity around the firefighter
+MPU-6050 detects if the firefighter has fallen using movement sensing
+NEO-6M GPS tracks the live location of the firefighter
+MQ-2 detects smoke and toxic gas levels in the air
+
+
+Microcontroller — ESP32
+
+Brain of the wearable device
+Reads all four sensors every 2 seconds
+Runs fall detection and status logic on device
+Sends data to cloud over built-in WiFi
+
+
+Protocols
+
+MPU-6050 talks to ESP32 over I2C
+NEO-6M GPS talks to ESP32 over UART
+DHT11 talks to ESP32 over a single digital wire
+MQ-2 sends an analog voltage that ESP32 reads and converts to a gas level
+
+
+Cloud
+
+ESP32 packages all readings into a JSON object
+Sends it to Firebase Realtime Database over HTTPS every 2 seconds
+
+
+Dashboard & App
+
+Both web dashboard and mobile app are connected to Firebase live
+When ESP32 sends new data, Firebase instantly pushes it to both
+Everything updates in under 1 second automatically
+
+
+Status Logic
+
+Fall detected or temp above 60°C or gas above 500 → Critical
+Temp between 45–60°C or gas between 300–500 → Warning
+Everything normal → Safe
+
+Implementation Plan:
+Phase 1 — Setting Up the Hardware
+First thing we do is get all the components on the table — ESP32, DHT11, MPU-6050, NEO-6M, and MQ-2. We connect them one by one on a breadboard and test each sensor individually on the Serial Monitor to make sure everything is reading correctly before moving forward. GPS needs to be tested near a window to get a proper fix, and the MQ-2 needs about 20 seconds to warm up before its readings are reliable.
+
+Phase 2 — Writing the Firmware
+Once hardware is confirmed working, we move to Arduino IDE. We write the code to read all four sensors, run the fall detection logic using the MPU-6050 accelerometer values, and derive the firefighter status automatically. Then we add WiFi connectivity and the Firebase push code so the ESP32 sends a fresh JSON update to the cloud every 2 seconds. We verify the entire flow using the Serial Monitor before moving to the next phase.
+
+Phase 3 — Setting Up Firebase
+We create a fresh Firebase project, enable the Realtime Database, and configure the database rules for development. We then check the Firebase console live to confirm the ESP32 data is coming in correctly and the JSON structure looks exactly as planned.
+
+Phase 4 — Building the Web Dashboard
+We initialize a React + Vite project and build the full command dashboard. This includes the live sensor cards for temperature, humidity, gas level, fall detection, and firefighter status. We add the GPS map with a live moving marker, the temperature history chart showing the last 20 readings, and the fall alert system with a flashing card and toast notification. The entire UI is styled in a dark industrial theme using Tailwind CSS and deployed live on Vercel.
+
+Phase 5 — Building the Mobile App
+We build a React Native + Expo app connected to the same Firebase project. The app shows the same live sensor data on a clean dark-themed mobile interface. It includes a GPS map screen and a push notification system that alerts the user on their phone the moment a fall is detected or the firefighter status turns critical. We test it on a physical Android device or through the Expo Go app.
+
+Phase 6 — Testing Everything Together
+With hardware, dashboard, and app all running, we do a full end-to-end test. We simulate a fall, expose the MQ-2 to smoke, and apply heat near the DHT11 to trigger all three alert types. We verify that the dashboard and mobile app both respond instantly and correctly to every condition.
